@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgentOps · Multi-AI Project Control</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="noise"></div>
+
+  <section id="auth-view" class="auth-shell">
+    <div class="auth-brand">
+      <div class="brand-lockup">
+        <div class="brand-mark">A</div>
+        <div>
+          <strong>AgentOps</strong>
+          <span>Multi-AI project control</span>
+        </div>
+      </div>
+      <div class="auth-copy">
+        <p class="eyebrow">ORCHESTRATE · OBSERVE · REVIEW</p>
+        <h1>Multiple agents.<br><em>One accountable workflow.</em></h1>
+        <p class="auth-lead">Plan tasks, route them to specialized AI agents, capture every run, and keep a human in control of the final decision.</p>
+        <div class="auth-proof">
+          <div><strong>CRUD</strong><span>Projects, tasks, agents</span></div>
+          <div><strong>MySQL</strong><span>Runs, artifacts, reviews</span></div>
+          <div><strong>Mock + Live</strong><span>Reproducible by default</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-panel">
+      <div class="auth-card">
+        <div class="auth-card-head">
+          <p class="eyebrow">WELCOME BACK</p>
+          <h2>Enter the control room</h2>
+          <p>Use the seeded demo account or create your own.</p>
+        </div>
+
+        <form id="login-form" class="stack-form">
+          <label>Email or username
+            <input name="identifier" autocomplete="username" value="alice@example.com" required>
+          </label>
+          <label>Password
+            <input name="password" type="password" autocomplete="current-password" value="password123" required>
+          </label>
+          <button class="btn btn-primary btn-wide" type="submit">Sign in</button>
+        </form>
+
+        <div class="demo-note"><span>Demo</span> alice@example.com / password123</div>
+        <button id="show-register" class="link-button" type="button">Need an account? Register</button>
+
+        <form id="register-form" class="stack-form hidden">
+          <label>Username
+            <input name="username" autocomplete="username" required>
+          </label>
+          <label>Email
+            <input name="email" type="email" autocomplete="email" required>
+          </label>
+          <label>Password
+            <input name="password" type="password" autocomplete="new-password" minlength="8" required>
+          </label>
+          <button class="btn btn-primary btn-wide" type="submit">Create account</button>
+          <button id="show-login" class="link-button" type="button">Back to sign in</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <div id="app-view" class="app-shell hidden">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark">A</div>
+        <div>
+          <strong>AgentOps</strong>
+          <span>Multi-AI project control</span>
+        </div>
+      </div>
+
+      <div class="topbar-center">
+        <label class="project-switcher">
+          <span>Project</span>
+          <select id="project-select"></select>
+        </label>
+        <button id="new-project-btn" class="btn btn-quiet" type="button">+ New project</button>
+      </div>
+
+      <div class="topbar-actions">
+        <button id="run-next-btn" class="btn btn-accent" type="button">Run next agent</button>
+        <div class="user-chip">
+          <span id="user-initial">A</span>
+          <div><strong id="user-name">alice</strong><small id="user-role">ADMIN</small></div>
+        </div>
+        <button id="logout-btn" class="icon-button" type="button" title="Log out">↗</button>
+      </div>
+    </header>
+
+    <main class="main-shell">
+      <section class="page-heading">
+        <div>
+          <p class="eyebrow">MISSION CONTROL</p>
+          <h1 id="project-title">Project</h1>
+          <p id="project-description" class="muted">Loading project context...</p>
+        </div>
+        <div class="heading-actions">
+          <div class="live-indicator"><span></span> MySQL connected</div>
+          <button id="refresh-btn" class="btn btn-quiet" type="button">Refresh</button>
+        </div>
+      </section>
+
+      <nav class="view-tabs" aria-label="Main navigation">
+        <button class="view-tab active" data-view="overview">Overview</button>
+        <button class="view-tab" data-view="tasks">Tasks <span id="task-count-badge">0</span></button>
+        <button class="view-tab" data-view="agents">Agent fleet</button>
+        <button class="view-tab" data-view="activity">Run history</button>
+      </nav>
+
+      <section id="view-overview" class="view-section active">
+        <div id="stat-grid" class="stat-grid"></div>
+
+        <div class="overview-grid">
+          <article class="card ready-card">
+            <div class="card-head">
+              <div><p class="eyebrow">NEXT IN LINE</p><h2>Ready to run</h2></div>
+              <span class="pill pill-soft">Human approved</span>
+            </div>
+            <div id="ready-task-list" class="stack-list"></div>
+          </article>
+
+          <article class="card fleet-card">
+            <div class="card-head">
+              <div><p class="eyebrow">AGENT FLEET</p><h2>Specialists online</h2></div>
+              <span class="pill pill-good">Available</span>
+            </div>
+            <div id="fleet-list" class="fleet-list"></div>
+          </article>
+        </div>
+
+        <div class="overview-grid lower">
+          <article class="card activity-card">
+            <div class="card-head">
+              <div><p class="eyebrow">RECENT EXECUTION</p><h2>Latest agent runs</h2></div>
+              <button class="text-button" data-view-link="activity">View all →</button>
+            </div>
+            <div id="recent-runs" class="table-wrap"></div>
+          </article>
+
+          <article class="card recommendation-card">
+            <div class="card-head">
+              <div><p class="eyebrow">AI SIGNALS</p><h2>Recommendations</h2></div>
+            </div>
+            <div id="recommendation-list" class="stack-list compact"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-tasks" class="view-section">
+        <div class="section-grid">
+          <article class="card form-card">
+            <div class="card-head">
+              <div><p class="eyebrow">CREATE</p><h2>New task</h2></div>
+            </div>
+            <form id="task-form" class="stack-form">
+              <label>Title
+                <input name="title" maxlength="200" placeholder="e.g. Implement order API" required>
+              </label>
+              <label>Description
+                <textarea name="description" rows="3" placeholder="What should the agent produce?"></textarea>
+              </label>
+              <div class="form-grid two">
+                <label>Required role
+                  <select name="required_role">
+                    <option value="PLANNER">Planner</option>
+                    <option value="CODER" selected>Coder</option>
+                    <option value="TESTER">Tester</option>
+                    <option value="REVIEWER">Reviewer</option>
+                  </select>
+                </label>
+                <label>Priority
+                  <select name="priority">
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM" selected>Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="URGENT">Urgent</option>
+                  </select>
+                </label>
+              </div>
+              <label>Estimated hours
+                <input name="estimated_hours" type="number" min="0" step="0.5" placeholder="Optional">
+              </label>
+              <label>Depends on
+                <select name="depends_on_ids" id="dependency-select" multiple size="5"></select>
+              </label>
+              <p class="form-hint">Hold Cmd/Ctrl to select multiple dependencies.</p>
+              <button class="btn btn-primary btn-wide" type="submit">Create task</button>
+            </form>
+          </article>
+
+          <article class="card task-board-card">
+            <div class="card-head">
+              <div><p class="eyebrow">EXECUTION BOARD</p><h2>Project tasks</h2></div>
+              <button id="new-task-shortcut" class="btn btn-quiet" type="button">Run next agent</button>
+            </div>
+            <div id="task-list" class="task-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-agents" class="view-section">
+        <div class="section-grid agent-grid">
+          <article class="card form-card">
+            <div class="card-head">
+              <div><p class="eyebrow">REGISTER</p><h2>New agent</h2></div>
+            </div>
+            <form id="agent-form" class="stack-form">
+              <label>Name
+                <input name="name" placeholder="e.g. Security Reviewer" required>
+              </label>
+              <label>Specialist role
+                <select name="role">
+                  <option value="PLANNER">Planner</option>
+                  <option value="CODER" selected>Coder</option>
+                  <option value="TESTER">Tester</option>
+                  <option value="REVIEWER">Reviewer</option>
+                </select>
+              </label>
+              <div class="form-grid two">
+                <label>Provider
+                  <select name="provider">
+                    <option value="mock">Mock</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="deepseek">DeepSeek</option>
+                    <option value="glm">GLM</option>
+                  </select>
+                </label>
+                <label>Mode
+                  <select name="execution_mode">
+                    <option value="MOCK">Mock</option>
+                    <option value="LIVE">Live</option>
+                  </select>
+                </label>
+              </div>
+              <label>Model name
+                <input name="model_name" value="mock-agent-v1" required>
+              </label>
+              <p class="form-hint">Mock mode needs no API key. Live mode reads provider keys from <code>.env</code>.</p>
+              <button class="btn btn-primary btn-wide" type="submit">Register agent</button>
+            </form>
+          </article>
+
+          <article class="card">
+            <div class="card-head">
+              <div><p class="eyebrow">ROSTER</p><h2>Agent performance</h2></div>
+              <span class="pill pill-soft">SQL aggregate</span>
+            </div>
+            <div id="agent-list" class="agent-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="view-activity" class="view-section">
+        <div class="activity-layout">
+          <article class="card">
+            <div class="card-head">
+              <div><p class="eyebrow">EXECUTION LOG</p><h2>All agent runs</h2></div>
+              <span class="pill pill-soft">Joined from 4 tables</span>
+            </div>
+            <div id="runs-table" class="table-wrap"></div>
+          </article>
+
+          <div class="activity-side">
+            <article class="card">
+              <div class="card-head">
+                <div><p class="eyebrow">ARTIFACTS</p><h2>Outputs</h2></div>
+              </div>
+              <div id="artifact-list" class="stack-list compact"></div>
+            </article>
+            <article class="card">
+              <div class="card-head">
+                <div><p class="eyebrow">AI SIGNALS</p><h2>Recommendation log</h2></div>
+              </div>
+              <div id="recommendation-log" class="stack-list compact"></div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="project-dialog" class="dialog">
+    <form id="project-form" method="dialog" class="dialog-card stack-form">
+      <div class="card-head">
+        <div><p class="eyebrow">NEW PROJECT</p><h2>Create a workspace</h2></div>
+        <button class="icon-button" value="cancel" formnovalidate>×</button>
+      </div>
+      <label>Project name
+        <input name="name" required placeholder="e.g. COMP3278 Group Project">
+      </label>
+      <label>Description
+        <textarea name="description" rows="4" placeholder="What is this team building?"></textarea>
+      </label>
+      <button class="btn btn-primary btn-wide" value="default" type="submit">Create project</button>
+    </form>
+  </dialog>
+
+  <dialog id="artifact-dialog" class="dialog artifact-dialog">
+    <div class="dialog-card">
+      <div class="card-head">
+        <div><p class="eyebrow">ARTIFACT</p><h2 id="artifact-title">Artifact</h2></div>
+        <button id="close-artifact" class="icon-button" type="button">×</button>
+      </div>
+      <pre id="artifact-content"></pre>
+    </div>
+  </dialog>
+
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
