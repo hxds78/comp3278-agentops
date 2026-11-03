@@ -38,7 +38,8 @@ This project is designed for the COMP3278 final project: it is a real web app wi
 │   └── seed.sql            # Demo users, project, tasks, agents and runs
 ├── docs/
 │   ├── ER_DIAGRAM.md       # Mermaid ER diagram
-│   └── KEY_QUERIES.sql     # Queries used in the presentation
+│   ├── KEY_QUERIES.sql     # Queries used in the presentation
+│   └── RELATIONSHIPS_AND_TESTING.md  # Full relationship matrix and test plan
 ├── public/
 │   ├── index.html
 │   ├── styles.css
